@@ -1,0 +1,4 @@
+**/file*.txt
+!**/fileB.txt
+**/contents.md
+!**/second/contents.md
