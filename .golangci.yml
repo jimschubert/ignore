@@ -1,0 +1,10 @@
+linters:
+  disable:
+    - typecheck
+  enable:
+    - makezero
+    - nosnakecase
+    - predeclared
+    - tenv
+    - unconvert
+    - unparam
