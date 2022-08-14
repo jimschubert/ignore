@@ -1,6 +1,4 @@
 linters:
-  disable:
-    - typecheck
   enable:
     - makezero
     - nosnakecase
