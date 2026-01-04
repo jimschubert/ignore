@@ -25,6 +25,7 @@ func (d directoryRule) AppliesTo(relativePath string) bool {
 		return false
 	}
 
+	//nolint:staticcheck
 	noTrail := strings.TrimSuffix(d.rule.Raw(), "/")
 	if strings.Count(noTrail, `/`) == 0 {
 		if singleDirectory, err := filePattern(`(*/)?` + noTrail + `/*`); err == nil {
