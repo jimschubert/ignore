@@ -7,10 +7,12 @@ import (
 	"github.com/jimschubert/ignore/strategy"
 )
 
+// DefaultStrategy provides a default strategy for parsing and building rules from .gitignore files.
 func DefaultStrategy() strategy.Strategy {
 	return GitignoreStrategy()
 }
 
+// GitignoreStrategy provides a strategy for parsing and building rules from .gitignore files.
 func GitignoreStrategy() strategy.Strategy {
 	p := parser.NewGitignoreParser()
 	return simpleStrategy{
