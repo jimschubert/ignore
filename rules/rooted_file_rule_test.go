@@ -38,15 +38,6 @@ func TestNewRootedFileRule(t *testing.T) {
 			},
 		},
 
-		{
-			name: "new with error",
-			args: args{
-				raw:    `/path/to/*g(-z]+ng`,
-				syntax: fooSyntax,
-			},
-			want:    &rule{},
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -158,7 +149,9 @@ func Test_rootedFileRule_AppliesTo(t *testing.T) {
 				raw: "/fo*.txt",
 				syntax: parts(
 					parser.TokenValue{Token: parser.RootedMarker},
-					parser.TokenValue{Token: parser.Text, Value: "fo*.txt"},
+					parser.TokenValue{Token: parser.Text, Value: "fo"},
+					parser.TokenValue{Token: parser.MatchAny},
+					parser.TokenValue{Token: parser.Text, Value: ".txt"},
 				),
 			},
 			args: args{relativePath: "fop.txt"},
@@ -170,7 +163,8 @@ func Test_rootedFileRule_AppliesTo(t *testing.T) {
 				raw: "/foo.*",
 				syntax: parts(
 					parser.TokenValue{Token: parser.RootedMarker},
-					parser.TokenValue{Token: parser.Text, Value: "foo.*"},
+					parser.TokenValue{Token: parser.Text, Value: "foo."},
+					parser.TokenValue{Token: parser.MatchAny},
 				),
 			},
 			args: args{relativePath: "foo.bar"},
@@ -182,7 +176,9 @@ func Test_rootedFileRule_AppliesTo(t *testing.T) {
 				raw: "/foo.t*t",
 				syntax: parts(
 					parser.TokenValue{Token: parser.RootedMarker},
-					parser.TokenValue{Token: parser.Text, Value: "foo.t*t"},
+					parser.TokenValue{Token: parser.Text, Value: "foo.t"},
+					parser.TokenValue{Token: parser.MatchAny},
+					parser.TokenValue{Token: parser.Text, Value: "t"},
 				),
 			},
 			args: args{relativePath: "foo.tot"},
@@ -194,7 +190,9 @@ func Test_rootedFileRule_AppliesTo(t *testing.T) {
 				raw: "/fo*.txt",
 				syntax: parts(
 					parser.TokenValue{Token: parser.RootedMarker},
-					parser.TokenValue{Token: parser.Text, Value: "fo*.txt"},
+					parser.TokenValue{Token: parser.Text, Value: "fo"},
+					parser.TokenValue{Token: parser.MatchAny},
+					parser.TokenValue{Token: parser.Text, Value: ".txt"},
 				),
 			},
 			args: args{relativePath: "bar.txt"},
@@ -206,7 +204,9 @@ func Test_rootedFileRule_AppliesTo(t *testing.T) {
 				raw: "/foo.t*t",
 				syntax: parts(
 					parser.TokenValue{Token: parser.RootedMarker},
-					parser.TokenValue{Token: parser.Text, Value: "foo.t*t"},
+					parser.TokenValue{Token: parser.Text, Value: "foo.t"},
+					parser.TokenValue{Token: parser.MatchAny},
+					parser.TokenValue{Token: parser.Text, Value: "t"},
 				),
 			},
 			args: args{relativePath: "foo.bar"},

@@ -1,0 +1,3 @@
+# see:  https://git-scm.com/docs/gitignore: Character ranges and wildcards
+file[0-9].txt
+test?.txt

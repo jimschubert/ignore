@@ -1,0 +1,4 @@
+# see:  https://git-scm.com/docs/gitignore: ** matches zero or more directories
+**/*.tmp
+cache/**
+a/**/b/*.md

@@ -94,7 +94,7 @@ func TestLineParser_parse(t *testing.T) {
 			},
 		},
 		{
-			// Per https://git-scm.com/docs/gitignore: Trailing spaces are ignored unless quoted with backslash
+			// see:  https://git-scm.com/docs/gitignore: Trailing spaces are ignored unless quoted with backslash
 			name: "escaped trailing space",
 			args: args{"file.txt\\ "},
 			want: []TokenValue{
@@ -142,13 +142,13 @@ func TestLineParser_parse(t *testing.T) {
 			want: []TokenValue{},
 		},
 		{
-			// Per https://git-scm.com/docs/gitignore: A blank line matches no files
+			// see:  https://git-scm.com/docs/gitignore: A blank line matches no files
 			name: "only spaces",
 			args: args{"   "},
 			want: []TokenValue{},
 		},
 		{
-			// Per https://git-scm.com/docs/gitignore: A backslash can escape special characters
+			// see:  https://git-scm.com/docs/gitignore: A backslash can escape special characters
 			name: "escaped asterisk",
 			args: args{"\\*file.txt"},
 			want: []TokenValue{
@@ -157,7 +157,7 @@ func TestLineParser_parse(t *testing.T) {
 			},
 		},
 		{
-			// Per https://git-scm.com/docs/gitignore: A backslash can escape special characters
+			// see:  https://git-scm.com/docs/gitignore: A backslash can escape special characters
 			name: "escaped question mark",
 			args: args{"file\\?.txt"},
 			want: []TokenValue{
@@ -167,7 +167,7 @@ func TestLineParser_parse(t *testing.T) {
 			},
 		},
 		{
-			// Per https://git-scm.com/docs/gitignore: A backslash can escape special characters
+			// see:  https://git-scm.com/docs/gitignore: A backslash can escape special characters
 			name: "escaped backslash",
 			args: args{"file\\\\name.txt"},
 			want: []TokenValue{

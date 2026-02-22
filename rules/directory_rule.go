@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"strings"
+	"regexp"
 
 	"github.com/jimschubert/ignore/parser"
 )
@@ -12,6 +12,8 @@ import (
 // directoryRule is a rule which applies to directories
 type directoryRule struct {
 	rule
+	// reuse pattern for performance
+	directoryPattern *regexp.Regexp
 }
 
 func (d directoryRule) Evaluate(relativePath string) (Operation, error) {
@@ -25,22 +27,7 @@ func (d directoryRule) AppliesTo(relativePath string) bool {
 		return false
 	}
 
-	//nolint:staticcheck
-	noTrail := strings.TrimSuffix(d.rule.Raw(), "/")
-	if strings.Count(noTrail, `/`) == 0 {
-		if singleDirectory, err := filePattern(`(*/)?` + noTrail + `/*`); err == nil {
-			return singleDirectory.MatchString(relativePath)
-		}
-	} else {
-		// This logic taken from .gitignore logic:
-		// For example, a pattern doc/frotz/ matches doc/frotz directory, but not a/doc/frotz directory; however
-		// frotz/ matches frotz and a/frotz that is a directory (all paths are relative from the .gitignore file).
-		if multiDirectory, err := filePattern(`^` + noTrail + `/?*`); err == nil {
-			return multiDirectory.MatchString(relativePath)
-		}
-	}
-
-	return false
+	return d.directoryPattern.MatchString(relativePath)
 }
 
 func (d directoryRule) GoString() string {
@@ -53,12 +40,15 @@ func (d directoryRule) GoString() string {
 
 // NewDirectoryRule constructs a new directory rule from raw syntax, exposing an error if the raw pattern is invalid.
 func NewDirectoryRule(raw string, syntax []parser.TokenValue) (Rule, error) {
-	// check if the raw definition can be treated as a regex…
-	if _, err := filePattern(raw); err != nil {
+	// Directory patterns are weird (see https://git-scm.com/docs/gitignore)
+	pattern, err := filePatternFromTokens(syntax)
+	if err != nil {
 		return rule{}, err
 	}
+
 	return &directoryRule{
-		rule: rule{raw: raw, syntax: syntax},
+		rule:             rule{raw: raw, syntax: syntax},
+		directoryPattern: pattern,
 	}, nil
 }
 

@@ -1,0 +1,4 @@
+# see:  https://git-scm.com/docs/gitignore: A backslash can escape special characters
+\*important.txt
+file\?.md
+test\\file.txt

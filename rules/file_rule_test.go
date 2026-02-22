@@ -20,6 +20,7 @@ func TestNewFileRule(t *testing.T) {
 		parser.TokenValue{Token: parser.Text, Value: "foo"},
 	)
 
+	//goland:noinspection ALL
 	tests := []struct {
 		name    string
 		args    args
@@ -39,13 +40,39 @@ func TestNewFileRule(t *testing.T) {
 		},
 
 		{
-			name: "new with error",
+			name: "new without error (syntax not raw)",
 			args: args{
-				raw:    `/path/to/*g(-z]+ng`,
-				syntax: fooSyntax,
+				raw: `/path/to/*g(-z]+ng`,
+				syntax: parts(
+					parser.TokenValue{Token: parser.RootedMarker},
+					parser.TokenValue{Token: parser.Text, Value: "path"},
+
+					parser.TokenValue{Token: parser.PathDelim},
+					parser.TokenValue{Token: parser.Text, Value: "to"},
+
+					parser.TokenValue{Token: parser.PathDelim},
+					parser.TokenValue{Token: parser.MatchAny},
+					parser.TokenValue{Token: parser.Text, Value: "g(-z]+ng"},
+				),
 			},
-			want:    &rule{},
-			wantErr: true,
+			want: &fileRule{
+				rule: rule{
+					raw: `/path/to/*g(-z]+ng`,
+					syntax: parts(
+						parser.TokenValue{Token: parser.RootedMarker},
+						parser.TokenValue{Token: parser.Text, Value: "path"},
+
+						parser.TokenValue{Token: parser.PathDelim},
+						parser.TokenValue{Token: parser.Text, Value: "to"},
+
+						parser.TokenValue{Token: parser.PathDelim},
+						parser.TokenValue{Token: parser.MatchAny},
+						parser.TokenValue{Token: parser.Text, Value: "g(-z]+ng"},
+					),
+				},
+				filenamePattern: regexp.MustCompile(`^path\/to\/[^\/]*?g\(-z\]\+ng$`),
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

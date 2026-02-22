@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/jimschubert/ignore/parser"
 )
@@ -27,14 +26,6 @@ func (f fileRule) AppliesTo(relativePath string) bool {
 	if fileInfo, err := os.Stat(relativePath); (err == nil || os.IsExist(err)) && fileInfo.IsDir() {
 		return false
 	}
-	// todo: consider filepath.Match
-	evaluatedExt := strings.TrimPrefix(filepath.Ext(relativePath), ".")
-	if extensionPattern, err := filePattern(strings.TrimPrefix(f.definedExt, ".")); err == nil {
-		if !extensionPattern.MatchString(evaluatedExt) {
-			return false
-		}
-	}
-
 	return f.filenamePattern.MatchString(relativePath)
 }
 
@@ -50,7 +41,7 @@ func (f fileRule) GoString() string {
 
 func NewFileRule(raw string, syntax []parser.TokenValue) (Rule, error) {
 	definedExt := filepath.Ext(raw)
-	pattern, err := filePattern(raw)
+	pattern, err := filePatternFromTokens(syntax)
 	if err != nil {
 		return rule{}, err
 	}

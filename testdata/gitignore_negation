@@ -1,0 +1,5 @@
+# see:  https://git-scm.com/docs/gitignore: Negation re-includes files
+*.log
+!important.log
+build/
+!build/keep.txt

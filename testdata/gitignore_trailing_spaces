@@ -1,0 +1,3 @@
+# see: https://git-scm.com/docs/gitignore: Trailing spaces are ignored unless quoted with backslash
+trimmed.txt
+spaced.txt\ 
