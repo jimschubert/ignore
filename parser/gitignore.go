@@ -30,6 +30,12 @@ func (l gitignoreParser) ParseLine(text string) ([]TokenValue, error) {
 		return parts, &InvalidPatternError{pattern: text}
 	}
 
+	// From https://git-scm.com/docs/gitignore: "A blank line matches no files, so it can serve as a separator for readability."
+	trimmed := strings.TrimSpace(text)
+	if len(trimmed) == 0 {
+		return parts, nil
+	}
+
 	runes := []rune(text)
 
 	if len(runes) == 0 {
@@ -98,8 +104,35 @@ func (l gitignoreParser) ParseLine(text string) ([]TokenValue, error) {
 		}
 
 		if EscapedSpace.MatchRunes(current, next) {
+			if buf.Len() > 0 {
+				// Trailing spaces are ignored unless they are quoted with backslash ("\").
+				// see https://git-scm.com/docs/gitignore
+				parts = append(parts, TokenValue{Token: Text, Value: buf.String(), Line: &text})
+				buf.Reset()
+			}
+
 			parts = append(parts, TokenValue{Token: EscapedSpace, Line: &text})
 			i++
+			continue
+		}
+
+		if Escape.MatchRune(current) && next != 0 && !anyTokenMatch(next, Comment, Negate, EscapedSpace) {
+			if buf.Len() > 0 {
+				// A backslash ("\") can be used to escape any character. E.g., "\*" matches a literal asterisk
+				// (and "\a" matches "a", even though there is no need for escaping there). As with fnmatch(3),
+				// a backslash at the end of a pattern is an invalid pattern that never matches.
+				// see https://git-scm.com/docs/gitignore
+				parts = append(parts, TokenValue{Token: Text, Value: buf.String(), Line: &text})
+				buf.Reset()
+			}
+			parts = append(parts, TokenValue{Token: Escape, Line: &text})
+			i++
+			// note: this looks redundant wrt next != 0, but it's not.
+			// if we're escaping and there are more chars, we need to write those 'more chars' here.
+			// without this, tests like `escaped asterisk` to cover exact text from the doc detail above would fail.
+			if i < len(runes) {
+				buf.WriteRune(next)
+			}
 			continue
 		}
 

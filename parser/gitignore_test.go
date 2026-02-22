@@ -78,6 +78,153 @@ func TestLineParser_parse(t *testing.T) {
 			args:    args{"***"},
 			wantErr: true,
 		},
+		{
+			name: "negate pattern",
+			args: args{"!important.txt"},
+			want: []TokenValue{
+				{Token: Negate, Line: util.Ptr("!important.txt")},
+				{Token: Text, Value: "important.txt", Line: util.Ptr("!important.txt")},
+			},
+		},
+		{
+			name: "trailing spaces ignored",
+			args: args{"file.txt   "},
+			want: []TokenValue{
+				{Token: Text, Value: "file.txt", Line: util.Ptr("file.txt   ")},
+			},
+		},
+		{
+			// Per https://git-scm.com/docs/gitignore: Trailing spaces are ignored unless quoted with backslash
+			name: "escaped trailing space",
+			args: args{"file.txt\\ "},
+			want: []TokenValue{
+				{Token: Text, Value: "file.txt", Line: util.Ptr("file.txt\\ ")},
+				{Token: EscapedSpace, Line: util.Ptr("file.txt\\ ")},
+			},
+		},
+		{
+			name: "character range",
+			args: args{"file[0-9].txt"},
+			want: []TokenValue{
+				{Token: Text, Value: "file[0-9].txt", Line: util.Ptr("file[0-9].txt")},
+			},
+		},
+		{
+			name: "question mark wildcard",
+			args: args{"file?.txt"},
+			want: []TokenValue{
+				{Token: Text, Value: "file?.txt", Line: util.Ptr("file?.txt")},
+			},
+		},
+		{
+			name: "trailing double asterisk",
+			args: args{"dir/**"},
+			want: []TokenValue{
+				{Token: Text, Value: "dir", Line: util.Ptr("dir/**")},
+				{Token: PathDelim, Line: util.Ptr("dir/**")},
+				{Token: MatchAll, Line: util.Ptr("dir/**")},
+			},
+		},
+		{
+			name: "middle double asterisk",
+			args: args{"a/**/b"},
+			want: []TokenValue{
+				{Token: Text, Value: "a", Line: util.Ptr("a/**/b")},
+				{Token: PathDelim, Line: util.Ptr("a/**/b")},
+				{Token: MatchAll, Line: util.Ptr("a/**/b")},
+				{Token: PathDelim, Line: util.Ptr("a/**/b")},
+				{Token: Text, Value: "b", Line: util.Ptr("a/**/b")},
+			},
+		},
+		{
+			name: "blank line",
+			args: args{""},
+			want: []TokenValue{},
+		},
+		{
+			// Per https://git-scm.com/docs/gitignore: A blank line matches no files
+			name: "only spaces",
+			args: args{"   "},
+			want: []TokenValue{},
+		},
+		{
+			// Per https://git-scm.com/docs/gitignore: A backslash can escape special characters
+			name: "escaped asterisk",
+			args: args{"\\*file.txt"},
+			want: []TokenValue{
+				{Token: Escape, Line: util.Ptr("\\*file.txt")},
+				{Token: Text, Value: "*file.txt", Line: util.Ptr("\\*file.txt")},
+			},
+		},
+		{
+			// Per https://git-scm.com/docs/gitignore: A backslash can escape special characters
+			name: "escaped question mark",
+			args: args{"file\\?.txt"},
+			want: []TokenValue{
+				{Token: Text, Value: "file", Line: util.Ptr("file\\?.txt")},
+				{Token: Escape, Line: util.Ptr("file\\?.txt")},
+				{Token: Text, Value: "?.txt", Line: util.Ptr("file\\?.txt")},
+			},
+		},
+		{
+			// Per https://git-scm.com/docs/gitignore: A backslash can escape special characters
+			name: "escaped backslash",
+			args: args{"file\\\\name.txt"},
+			want: []TokenValue{
+				{Token: Text, Value: "file", Line: util.Ptr("file\\\\name.txt")},
+				{Token: Escape, Line: util.Ptr("file\\\\name.txt")},
+				{Token: Text, Value: "\\name.txt", Line: util.Ptr("file\\\\name.txt")},
+			},
+		},
+		{
+			name: "rooted directory",
+			args: args{"/root/"},
+			want: []TokenValue{
+				{Token: RootedMarker, Line: util.Ptr("/root/")},
+				{Token: Text, Value: "root", Line: util.Ptr("/root/")},
+				{Token: DirectoryMarker, Line: util.Ptr("/root/")},
+			},
+		},
+		{
+			name: "negated directory",
+			args: args{"!keep/"},
+			want: []TokenValue{
+				{Token: Negate, Line: util.Ptr("!keep/")},
+				{Token: Text, Value: "keep", Line: util.Ptr("!keep/")},
+				{Token: DirectoryMarker, Line: util.Ptr("!keep/")},
+			},
+		},
+		{
+			name: "path with multiple slashes",
+			args: args{"foo/bar/baz"},
+			want: []TokenValue{
+				{Token: Text, Value: "foo", Line: util.Ptr("foo/bar/baz")},
+				{Token: PathDelim, Line: util.Ptr("foo/bar/baz")},
+				{Token: Text, Value: "bar", Line: util.Ptr("foo/bar/baz")},
+				{Token: PathDelim, Line: util.Ptr("foo/bar/baz")},
+				{Token: Text, Value: "baz", Line: util.Ptr("foo/bar/baz")},
+			},
+		},
+		{
+			name: "wildcard in path",
+			args: args{"foo/*/bar"},
+			want: []TokenValue{
+				{Token: Text, Value: "foo", Line: util.Ptr("foo/*/bar")},
+				{Token: PathDelim, Line: util.Ptr("foo/*/bar")},
+				{Token: MatchAny, Line: util.Ptr("foo/*/bar")},
+				{Token: PathDelim, Line: util.Ptr("foo/*/bar")},
+				{Token: Text, Value: "bar", Line: util.Ptr("foo/*/bar")},
+			},
+		},
+		{
+			name: "leading double asterisk",
+			args: args{"**/foo"},
+			want: []TokenValue{
+				{Token: MatchAll, Line: util.Ptr("**/foo")},
+				{Token: PathDelim, Line: util.Ptr("**/foo")},
+				{Token: Text, Value: "foo", Line: util.Ptr("**/foo")},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
