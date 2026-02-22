@@ -1,10 +1,26 @@
-# Ignore
+# ignore
 
-A simple ignore file processor for Go.
+[![Go Reference](https://pkg.go.dev/badge/github.com/jimschubert/ignore.svg)](https://pkg.go.dev/github.com/jimschubert/ignore)
+[![Build](https://github.com/jimschubert/ignore/actions/workflows/build.yml/badge.svg)](https://github.com/jimschubert/ignore/actions/workflows/build.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jimschubert/ignore)](https://goreportcard.com/report/github.com/jimschubert/ignore)
+[![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue)](./LICENSE)
 
-This is a reimagining of [jimschubert/iggy](https://github.com/jimschubert/iggy).
+
+A simple ignore file processor for Go that evaluates patterns similar to `.gitignore` syntax.
+
+---
+
+## Installation
+
+```sh
+go get github.com/jimschubert/ignore
+```
 
 ## Usage
+
+> [!NOTE]
+> The ignore Processor does not currently evaluate ignore files of all parent directories.
+> To process parent ignores, you will need to loop through parent directories to evaluate.
 
 Given an ignore file, for example `/your/directory/.gitignore`:
 
@@ -94,10 +110,8 @@ matches both `path\to\your_file` and `path\to\my_file`, as well as `path\to\file
 
 ## Why?
 
-I mean… why not? Sometimes I want a simple way to ignore or force file processing in a directory, but I don't want to shell out to some other program to evaluate the logic.
+Processing ignore patterns in-process avoids spawning external programs and provides a Go-native way to evaluate file matching rules.
 
-# License
+## License
 
-Apache 2.0.
-
-see [License](./LICENSE)
+Apache 2.0. See [License](./LICENSE).
